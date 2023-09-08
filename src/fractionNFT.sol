@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
+
 // import "openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 // import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 interface IMyERC721 {
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) external;
+    function transferFrom(address from, address to, uint256 tokenId) external;
 
     function name() external view returns (string memory);
 
@@ -111,7 +108,7 @@ contract AuctionFraction {
         return sent;
     }
 
-    function test() external view returns(uint) {
+    function test() external view returns (uint) {
         return highestBid;
     }
 }
@@ -126,6 +123,16 @@ contract fractionalNFT {
         uint256 amtToSellInEth;
         bool setForAuction;
     }
+
+    event setNFTFraction(
+        address indexed _contract,
+        uint _tokenID,
+        uint _supply,
+        uint _ETHToSell,
+        address indexed _tokenOwner
+    );
+
+    event buyFractionToken(uint _amount, address indexed _userAddr);
 
     address public _owner;
     IMyERC20 TokenInstance;
@@ -182,9 +189,16 @@ contract fractionalNFT {
         details.canTransfer = false;
         details.amtToSellInEth = _amtToSellInEth;
         details.setForAuction = false;
-        totalFractions = _amtToSellInEth * (10**18);
+        totalFractions = _amtToSellInEth * (10 ** 18);
         fractionsLeft = totalFractions;
         tokenOwner = _tokenOwner;
+        emit setNFTFraction(
+            _nftContract,
+            _tokenID,
+            _totalsupply,
+            _amtToSellInEth,
+            _tokenOwner
+        );
         return true;
     }
 
@@ -201,6 +215,7 @@ contract fractionalNFT {
         require(fractionsLeft >= fractions, "not enough fractions left");
         fractionsLeft -= fractions;
         TokenInstance.mint(msg.sender, fractions);
+        emit buyFractionToken(fractions, msg.sender);
         return true;
     }
 
@@ -235,10 +250,10 @@ contract fractionalNFT {
         return true;
     }
 
-    function initializeAuction(uint256 _startTime, uint256 _endTime)
-        public
-        returns (address)
-    {
+    function initializeAuction(
+        uint256 _startTime,
+        uint256 _endTime
+    ) public returns (address) {
         require(
             forAuctionTokens >= (totalFractions * ((51 * 100) / 100)) / 100,
             "51% of supply should be present in contract"
@@ -258,15 +273,15 @@ contract fractionalNFT {
             address(intializeAuctionContract),
             details.nftTokenId
         );
-        auctionContract = address(intializeAuctionContract);
-        return auctionContract;
+
+        return address(intializeAuctionContract);
     }
 
     function withdrawEth() public returns (bool) {
         require(fractionsLeft == 0, "still fractions are left");
 
         (bool sent, ) = tokenOwner.call{
-            value: details.amtToSellInEth * (10**18)
+            value: details.amtToSellInEth * (10 ** 18)
         }("");
         require(sent, "Failed to send Ether");
         return true;
@@ -277,11 +292,9 @@ contract fractionalNFT {
      * @return True if the withdrawal is successful.
      */
 
-    function endAuctionAndClaimEth(uint256 _ethAmount)
-        public
-        onlyOwner
-        returns (bool)
-    {
+    function endAuctionAndClaimEth(
+        uint256 _ethAmount
+    ) public onlyOwner returns (bool) {
         details.setForAuction = false;
         ethAmountByAuction = _ethAmount;
         return true;
