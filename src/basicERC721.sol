@@ -8,6 +8,7 @@ contract MyToken is ERC721, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
+    receive() external payable {}
 
     constructor() ERC721("AuctionToken", "AUCTION") {}
 

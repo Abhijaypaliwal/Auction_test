@@ -110,6 +110,10 @@ contract AuctionFraction {
         require(sent, "Failed to send Ether");
         return sent;
     }
+
+    function test() external view returns(uint) {
+        return highestBid;
+    }
 }
 
 contract fractionalNFT {
