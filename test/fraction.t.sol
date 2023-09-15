@@ -33,7 +33,7 @@ contract test_fraction is Test {
             5,
             address(1)
         );
-        address _fractionAddr = payable(address(fractionContract));
+        address = payable(address(fractionContract));
         deal(address(1), 100 ether);
         fractionContract.BuyFractionNFT{value: 5 ether}();
         console.log(address(fractionContract).balance);
